@@ -4,12 +4,16 @@ import * as fs from "https://deno.land/std@0.141.0/fs/mod.ts";
 
 const TOKEN = Deno.env.get("ASSEMBLYAI_TOKEN")
 
-console.log(TOKEN)
-
 if (TOKEN == "") {
     console.error("ASSEMBLYAI_TOKEN must be set in environment or in .env")
     Deno.exit(1)
 }
+
+// foo
+// bar
+// baz
+// -> [ "foo", "bar", "baz" ]
+const customVocab = (await Deno.readTextFile('custom_vocab.txt')).trim().split('\n')
 
 if (Deno.args.length != 1) {
     console.error("Please provide one argument: the path to the file to upload.")
@@ -21,8 +25,6 @@ console.log("Loading audio file to memory...")
 const audioUpload = await Deno.readFile(Deno.args[0])
 
 console.log("Uploading audio file to AssemblyAI...")
-
-//const uploadResp = await assembly.post("/upload", new ReadableStream(audioUpload))
 
 const uploadResp = await fetch('https://api.assemblyai.com/v2/upload', {
     method: 'POST',
@@ -49,7 +51,8 @@ console.log("Transcribing file using AssemblyAI...")
 
 const transcriptionResp = await assembly.post("/transcript", {
         audio_url: uploadURL,
-        speaker_labels: true
+        speaker_labels: true,
+        word_boost: customVocab
     }).catch(err => console.error(err) && Deno.exit(1))
 
 const transcriptionId = transcriptionResp.data.id
