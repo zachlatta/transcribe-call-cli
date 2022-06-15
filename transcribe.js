@@ -49,7 +49,7 @@ console.log("Transcribing file using AssemblyAI...")
 
 const transcriptionResp = await assembly.post("/transcript", {
         audio_url: uploadURL,
-        dual_channel: true
+        speaker_labels: true
     }).catch(err => console.error(err) && Deno.exit(1))
 
 const transcriptionId = transcriptionResp.data.id
@@ -77,4 +77,11 @@ if (status == "error") {
 }
 
 await Deno.writeTextFile('transcription.json', JSON.stringify(transcription));
-console.log(transcription)
+
+let mdOutput = ""
+
+transcription.utterances.forEach(u => mdOutput += `**Speaker ${u.speaker}:** ${u.text}\n\n`)
+
+await Deno.writeTextFile('transcription.md', mdOutput)
+
+console.log(mdOutput)
